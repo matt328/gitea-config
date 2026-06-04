@@ -1,0 +1,25 @@
+[Unit]
+Description=Nginx Proxy Manager Container Service
+After=network-online.target
+{% if npm_after_service is defined and npm_after_service|length > 0 %}
+After={{ npm_after_service }}
+Wants={{ npm_wants_service | default(npm_after_service) }}
+{% endif %}
+
+[Container]
+Image={{ npm_image | default('docker.io/jc21/nginx-proxy-manager:latest') }}
+ContainerName=npm
+{% for p in npm_publish_ports | default(['80:80','443:443','22:22','81:81']) %}
+PublishPort={{ p }}
+{% endfor %}
+{% for v in npm_volumes | default(['/var/lib/npm/data:/data:Z','/var/lib/npm/letsencrypt:/etc/letsencrypt:Z']) %}
+Volume={{ v }}
+{% endfor %}
+AutoUpdate={{ npm_auto_update | default('registry') }}
+Network={{ npm_network | default('homelab_net') }}
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

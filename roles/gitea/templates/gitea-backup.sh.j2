@@ -1,0 +1,23 @@
+#!/bin/bash
+# Path definitions
+BACKUP_DIR="/mnt/backups"
+LIMIT_GB=20  # Adjusted to fit your 32GB drive
+DUMP_NAME="gitea-dump-$(date +%Y-%m-%d-%H%M).zip"
+
+# 1. Run the Gitea dump
+# We assume the container name is 'gitea'
+podman exec -u git gitea /usr/local/bin/gitea dump -c /data/gitea/conf/app.ini -f /data/gitea/gitea-dump.zip
+mv /var/lib/gitea/gitea/gitea-dump.zip "$BACKUP_DIR/$DUMP_NAME"
+
+# 2. Cleanup Logic (Size-based retention)
+# Calculate current usage of the backup directory in GB
+current_size=$(du -sb "$BACKUP_DIR" | cut -f1)
+limit_bytes=$((LIMIT_GB * 1024 * 1024 * 1024))
+
+# While size is larger than limit, delete the oldest file
+while [ "$current_size" -gt "$limit_bytes" ]; do
+    oldest_file=$(ls -tr "$BACKUP_DIR"/gitea-dump-*.zip | head -n 1)
+    if [ -z "$oldest_file" ]; then break; fi
+    rm "$oldest_file"
+    current_size=$(du -sb "$BACKUP_DIR" | cut -f1)
+done

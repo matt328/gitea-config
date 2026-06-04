@@ -1,0 +1,7 @@
+---
+- name: Configure Gitea Mini PC
+  hosts: localhost
+  become: true  # Needed for dnf and systemd system units
+  roles:
+    - base
+    - gitea

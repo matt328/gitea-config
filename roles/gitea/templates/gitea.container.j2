@@ -1,0 +1,33 @@
+[Unit]
+Description=Gitea Container Service
+After=network-online.target
+{% if gitea_after_service is defined and gitea_after_service|length > 0 %}
+After={{ gitea_after_service }}
+Wants={{ gitea_after_service }}
+{% endif %}
+
+[Container]
+Image={{ gitea_image | default('docker.io/gitea/gitea:latest') }}
+{% if gitea_root_url is defined %}
+Environment=GITEA__server__ROOT_URL={{ gitea_root_url }}
+{% endif %}
+{% if gitea_ssh_domain is defined %}
+Environment=GITEA__server__SSH_DOMAIN={{ gitea_ssh_domain }}
+{% endif %}
+Environment=GITEA__server__SSH_PORT={{ gitea_ssh_port | default(22) }}
+Environment=GITEA__actions__ENABLED={{ gitea_actions_enabled | default('true') }}
+ContainerName=gitea
+{% for p in gitea_publish_ports | default(['3000:3000']) %}
+PublishPort={{ p }}
+{% endfor %}
+{% for v in gitea_volumes | default(['/var/lib/gitea:/data:Z']) %}
+Volume={{ v }}
+{% endfor %}
+AutoUpdate={{ gitea_auto_update | default('registry') }}
+Network={{ gitea_network | default('homelab_net') }}
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target

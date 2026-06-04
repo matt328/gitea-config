@@ -1,0 +1,26 @@
+---
+- name: Install system packages
+  dnf:
+    name:
+      - podman
+      - cockpit
+      - cockpit-podman
+    state: present
+
+- name: Enable system services
+  systemd:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  loop:
+    - cockpit.socket
+    - podman.socket
+
+- name: Deploy Quadlet network file
+  copy:
+    dest: /etc/containers/systemd/homelab_net.network
+    content: |
+      [Network]
+      NetworkName=homelab_net
+    mode: '0644'
+  notify: Reload systemd daemon

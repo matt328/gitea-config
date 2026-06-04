@@ -1,0 +1,33 @@
+# Group variables for provision-git
+
+# Gitea defaults
+gitea_image: docker.io/gitea/gitea:latest
+gitea_root_url: https://git.lab.teeter.dev/
+gitea_ssh_domain: git.lab.teeter.dev
+gitea_ssh_port: 22
+gitea_actions_enabled: true
+gitea_publish_ports:
+  - "3000:3000"
+gitea_volumes:
+  - "/var/lib/gitea:/data:Z"
+gitea_network: homelab_net
+gitea_auto_update: registry
+# Optionally override the dependency service name (leave empty to skip)
+gitea_after_service: ""
+
+# Nginx Proxy Manager defaults
+npm_image: docker.io/jc21/nginx-proxy-manager:latest
+npm_publish_ports:
+  - "80:80"
+  - "443:443"
+  - "22:22"
+  - "81:81"
+npm_volumes:
+  - "/var/lib/npm/data:/data:Z"
+  - "/var/lib/npm/letsencrypt:/etc/letsencrypt:Z"
+npm_network: homelab_net
+npm_auto_update: registry
+# The service NPM should wait for; default is gitea.service
+npm_after_service: gitea.service
+npm_wants_service: gitea.service
+

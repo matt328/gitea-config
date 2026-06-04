@@ -1,0 +1,107 @@
+---
+- name: Ensure Gitea data directory exists
+  file:
+    path: /var/lib/gitea
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+
+- name: Ensure custom theme directories exist
+  file:
+    path: "/var/lib/gitea/gitea/public/assets/css"
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Deploy Gitea Quadlet file
+  template:
+    src: gitea.container.j2
+    dest: /etc/containers/systemd/gitea.container
+    mode: '0644'
+  notify: Reload systemd daemon
+
+# This forces the "Reload systemd daemon" handler to run RIGHT NOW
+- name: Flush handlers to reload systemd
+  meta: flush_handlers
+
+- name: Reload systemd to recognize Quadlet
+  ansible.builtin.command: systemctl daemon-reload
+
+- name: Start Gitea service
+  systemd:
+    name: gitea
+    scope: system
+    enabled: yes
+    state: started
+- name: Deploy backup script
+  template:
+    src: gitea-backup.sh.j2
+    dest: /usr/local/bin/gitea-backup.sh
+    mode: '0755'
+
+- name: Download and extract Catppuccin Gitea themes
+  unarchive:
+    src: https://github.com/catppuccin/gitea/releases/download/v1.0.2/catppuccin-gitea.tar.gz
+    dest: /var/lib/gitea/gitea/public/assets/css/
+    remote_src: yes
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+  notify: Reload systemd daemon
+
+- name: Set Catppuccin Frappe as default theme
+  ini_file:
+    path: /var/lib/gitea/custom/conf/app.ini
+    section: ui
+    option: DEFAULT_THEME
+    value: "catppuccin-frappe"
+  notify: Reload systemd daemon
+
+- name: Deploy systemd backup service
+  template:
+    src: gitea-backup.service.j2
+    dest: /etc/systemd/system/gitea-backup.service
+  notify: Reload systemd daemon
+
+- name: Deploy systemd backup timer
+  template:
+    src: gitea-backup.timer.j2
+    dest: /etc/systemd/system/gitea-backup.timer
+  notify: Reload systemd daemon
+
+- name: Enable and start the timer
+  systemd:
+    name: gitea-backup.timer
+    enabled: yes
+    state: started
+- name: Ensure NPM volume directories exist
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  loop:
+    - /var/lib/npm/data
+    - /var/lib/npm/letsencrypt
+- name: Deploy Nginx Proxy Manager Quadlet
+  template:
+    src: npm.container.j2
+    dest: /etc/containers/systemd/npm.container
+    mode: '0644'
+  notify: Reload systemd daemon
+
+- name: Flush handlers to reload systemd
+  meta: flush_handlers
+
+- name: Reload systemd to recognize Quadlet
+  ansible.builtin.command: systemctl daemon-reload
+
+- name: Start NPM service
+  systemd:
+    name: npm
+    scope: system
+    enabled: yes
+    state: started

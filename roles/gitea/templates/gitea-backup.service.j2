@@ -1,0 +1,8 @@
+[Unit]
+Description=Gitea Backup Service
+Wants=gitea-backup.timer
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/gitea-backup.sh
+User=root
