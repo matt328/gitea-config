@@ -2,7 +2,8 @@
 
 ## Overview
 
-This repository contains an Ansible playbook and Quadlet/podman provisioning to run a self-hosted Gitea container and an Nginx Proxy Manager (NPM) container. It is designed for a small DR-capable host (local podman + systemd quadlets).
+This repository contains an Ansible playbook and Quadlet/podman provisioning to run a self-hosted Gitea container and an
+Nginx Proxy Manager (NPM) container. It is designed for a small DR-capable host (local podman + systemd quadlets).
 
 Key components
 
@@ -58,14 +59,16 @@ sudo ansible-playbook -i inventory.ini site.yml
 
 ### Design notes
 
-- The backup process performs a Gitea "dump" inside the Gitea container and moves the generated archive to `$BACKUP_DIR` (defaults to `/mnt/backups`).
+- The backup process performs a Gitea "dump" inside the Gitea container and moves the generated archive to `$BACKUP_DIR`
+  (defaults to `/mnt/backups`).
 - The script keeps total backup usage below `LIMIT_GB` (default `20GB`). Adjust as needed.
 
 ### Recovery workflow (new host or after disk replacement)
 
 1. Provision a new host (same OS family) and install podman + systemd + ansible (or run the playbook steps manually).
 2. Clone this repository and update `gitea.container.j2` if domain or ports differ.
-3. Ensure the backup volume from the previous host is attached and mounted at `/mnt/backups`, or copy the latest `gitea-dump-*.zip` onto the new host's `/mnt/backups`.
+3. Ensure the backup volume from the previous host is attached and mounted at `/mnt/backups`, or copy the latest
+   `gitea-dump-*.zip` onto the new host's `/mnt/backups`.
 4. Run the playbook to create directories and start services:
 
 ```bash
@@ -118,9 +121,12 @@ sudo systemctl status gitea-backup.timer
 
 ## Customization and notes
 
-- The `gitea.container.j2` template sets Gitea environment entries (`ROOT_URL`, `SSH_DOMAIN`, `SSH_PORT`). Change those to match your DNS and firewall.
-- The playbook uses the Ansible podman collection to deploy NPM. If running on a non-DNF host, install podman and adjust `roles/base/tasks/main.yml` accordingly.
-- Quadlet files are written to `/etc/containers/systemd`, so Gitea runs as a systemd-managed podman container: manage it with `systemctl` (system scope) or podman commands.
+- The `gitea.container.j2` template sets Gitea environment entries (`ROOT_URL`, `SSH_DOMAIN`, `SSH_PORT`). Change those
+  to match your DNS and firewall.
+- The playbook uses the Ansible podman collection to deploy NPM. If running on a non-DNF host, install podman and adjust
+  `roles/base/tasks/main.yml` accordingly.
+- Quadlet files are written to `/etc/containers/systemd`, so Gitea runs as a systemd-managed podman container: manage it
+  with `systemctl` (system scope) or podman commands.
 - Test restores on a staging host before relying on them for production DR procedures.
 
 ## Support
@@ -132,4 +138,5 @@ Potential improvements:
 
 ## Contributing
 
-Open a PR with improvements or suggestions. If possible, describe the expected DR behavior and desired backup retention limits.
+Open a PR with improvements or suggestions. If possible, describe the expected DR behavior and desired backup retention
+limits.
