@@ -31,15 +31,24 @@ Key components
 1. Clone this repository onto the host:
 
 ```bash
-git clone <repo> && cd provision-git
+git clone <repo> && cd gitea-config
 ```
 
-2. Optionally update variables:
+2. Create your local environment configuration:
 
-- Edit `roles/gitea/templates/gitea.container.j2` to set `GITEA__server__ROOT_URL` and `SSH_DOMAIN` to your domain(s)
-- If you want a different backup location or retention, edit `roles/gitea/templates/gitea-backup.sh.j2`
+```bash
+cp group_vars/all.local.example.yaml group_vars/all.local.yaml
+```
 
-3. Run the playbook locally (it targets `localhost`):
+3. Edit `group_vars/all.local.yaml` with your environment-specific values:
+
+- `gitea_root_url` — your Gitea domain (e.g., `https://git.example.com/`)
+- `gitea_ssh_domain` — SSH domain for Gitea (e.g., `git.example.com`)
+- `backup_dir` — path to your backup volume (e.g., `/mnt/backups`)
+- `backup_limit_gb` — maximum size for backups before older ones are deleted
+- Other settings as needed
+
+4. Run the playbook locally (it targets `localhost`):
 
 ```bash
 sudo ansible-playbook -i inventory.ini site.yml
@@ -66,28 +75,34 @@ sudo ansible-playbook -i inventory.ini site.yml
 ### Recovery workflow (new host or after disk replacement)
 
 1. Provision a new host (same OS family) and install podman + systemd + ansible (or run the playbook steps manually).
-2. Clone this repository and update `gitea.container.j2` if domain or ports differ.
-3. Ensure the backup volume from the previous host is attached and mounted at `/mnt/backups`, or copy the latest
-   `gitea-dump-*.zip` onto the new host's `/mnt/backups`.
-4. Run the playbook to create directories and start services:
+2. Clone this repository and create your local configuration:
+
+```bash
+cp group_vars/all.local.example.yaml group_vars/all.local.yaml
+```
+
+3. Edit `group_vars/all.local.yaml` if domain, ports, or backup paths differ from your previous setup.
+4. Ensure the backup volume from the previous host is attached and mounted at your configured `backup_dir`, or copy the latest
+   `gitea-dump-*.zip` onto the new host's backup directory.
+5. Run the playbook to create directories and start services:
 
 ```bash
 sudo ansible-playbook -i inventory.ini site.yml
 ```
 
-5. Stop the Gitea service before restoring:
+6. Stop the Gitea service before restoring:
 
 ```bash
 sudo systemctl stop gitea
 ```
 
-6. Copy the desired backup archive into the Gitea data path the playbook expects, for example:
+7. Copy the desired backup archive into the Gitea data path the playbook expects, for example:
 
 ```bash
 sudo cp /mnt/backups/gitea-dump-YYYY-MM-DD-XXXX.zip /var/lib/gitea/gitea/gitea-dump.zip
 ```
 
-7. Inside the running or restored container, perform the restore (recommended to test on staging):
+8. Inside the running or restored container, perform the restore (recommended to test on staging):
 
 ```bash
 # If container is running as 'gitea' use podman exec
@@ -101,7 +116,7 @@ podman exec -it gitea /bin/sh
 # then inspect: /usr/local/bin/gitea --help
 ```
 
-8. Start the Gitea service if stopped:
+9. Start the Gitea service if stopped:
 
 ```bash
 sudo systemctl start gitea
@@ -119,10 +134,29 @@ sudo systemctl status gitea-backup.timer
 
 - Spot-check `/mnt/backups` for newly created dumps
 
+## Configuration
+
+This repository uses an Ansible pattern for managing environment-specific configuration:
+
+### Default Configuration (`group_vars/all.yaml`)
+Contains sensible defaults that work for most setups. **Do NOT commit local changes here.**
+
+### Local Configuration (`group_vars/all.local.yaml`)
+Your environment-specific values go here. **This file is gitignored and should never be committed.**
+
+To create your local config:
+```bash
+cp group_vars/all.local.example.yaml group_vars/all.local.yaml
+```
+
+Then edit `group_vars/all.local.yaml` with your values. Ansible will automatically merge these variables with the defaults, allowing you to override only what you need.
+
+### Available Configuration Options
+See `group_vars/all.local.example.yaml` for a complete list of configurable options with descriptions.
+
 ## Customization and notes
 
-- The `gitea.container.j2` template sets Gitea environment entries (`ROOT_URL`, `SSH_DOMAIN`, `SSH_PORT`). Change those
-  to match your DNS and firewall.
+- The local configuration file (`group_vars/all.local.yaml`) overrides defaults in `group_vars/all.yaml`
 - The playbook uses the Ansible podman collection to deploy NPM. If running on a non-DNF host, install podman and adjust
   `roles/base/tasks/main.yml` accordingly.
 - Quadlet files are written to `/etc/containers/systemd`, so Gitea runs as a systemd-managed podman container: manage it
@@ -131,10 +165,10 @@ sudo systemctl status gitea-backup.timer
 
 ## Support
 
-Potential improvements:
+Potential future improvements:
 
-- Make domain, ports, backup path and retention configurable via `group_vars/all.yml`
 - Add secure secrets management for database credentials (if you switch from built-in DB to an external DB)
+- Add support for custom Gitea app.ini configuration via group_vars
 
 ## Contributing
 

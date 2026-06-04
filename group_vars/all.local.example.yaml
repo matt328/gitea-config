@@ -1,0 +1,77 @@
+# This is a template file. Copy this to 'all.local.yaml' and customize for your environment.
+# The all.local.yaml file should NOT be committed to version control as it contains
+# environment-specific configuration.
+#
+# Copy with: cp group_vars/all.local.example.yaml group_vars/all.local.yaml
+# Then edit all.local.yaml with your specific values.
+
+# ============================================================================
+# Gitea Configuration
+# ============================================================================
+
+# The domain where Gitea will be accessible (e.g., https://git.example.com/)
+gitea_root_url: "https://git.lab.teeter.dev/"
+
+# SSH domain for the Gitea SSH server (e.g., git.example.com)
+gitea_ssh_domain: "git.lab.teeter.dev"
+
+# SSH port for Gitea (default: 22)
+# gitea_ssh_port: 22
+
+# Enable Gitea Actions (default: true)
+# gitea_actions_enabled: true
+
+# Docker image for Gitea (default: docker.io/gitea/gitea:latest)
+# gitea_image: "docker.io/gitea/gitea:latest"
+
+# Port mappings for Gitea
+# gitea_publish_ports:
+#   - "3000:3000"
+
+# Volume mounts for Gitea
+# gitea_volumes:
+#   - "/var/lib/gitea:/data:Z"
+
+# Optional service to wait for before starting Gitea
+# gitea_after_service: ""
+
+# ============================================================================
+# Nginx Proxy Manager Configuration
+# ============================================================================
+
+# Docker image for Nginx Proxy Manager
+# npm_image: "docker.io/jc21/nginx-proxy-manager:latest"
+
+# Port mappings for NPM
+# npm_publish_ports:
+#   - "80:80"
+#   - "443:443"
+#   - "22:22"
+#   - "81:81"
+
+# Volume mounts for NPM
+# npm_volumes:
+#   - "/var/lib/npm/data:/data:Z"
+#   - "/var/lib/npm/letsencrypt:/etc/letsencrypt:Z"
+
+# Service that NPM should wait for (default: gitea.service)
+# npm_after_service: "gitea.service"
+# npm_wants_service: "gitea.service"
+
+# ============================================================================
+# Backup Configuration
+# ============================================================================
+
+# Directory where Gitea backups will be stored
+# backup_dir: "/mnt/backups"
+
+# Maximum size of backups directory in GB (older backups will be deleted)
+# backup_limit_gb: 20
+
+# ============================================================================
+# Docker Network Configuration
+# ============================================================================
+
+# Docker network name for services
+# gitea_network: "homelab_net"
+# npm_network: "homelab_net"

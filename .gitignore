@@ -1,0 +1,6 @@
+# Local environment-specific configuration
+group_vars/all.local.yaml
+group_vars/*.local.yaml
+
+# Ansible artifacts
+*.retry
