@@ -59,7 +59,7 @@
 - name: Download and extract Catppuccin latte-green theme
   shell: |
     curl -sL https://github.com/catppuccin/gitea/releases/download/v1.0.2/catppuccin-gitea.tar.gz | \
-    tar xz -C /var/lib/gitea/gitea/public/assets/css/ theme-catppuccin-frappe-green.css
+    tar xz -C /var/lib/gitea/gitea/public/assets/css/ ./theme-catppuccin-frappe-green.css
   args:
     creates: /var/lib/gitea/gitea/public/assets/css/theme-catppuccin-frappe-green.css
 
