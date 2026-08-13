@@ -2,3 +2,8 @@
 - name: Reload systemd daemon
   systemd:
     daemon_reload: yes
+
+- name: Restart gitea
+  systemd:
+    name: gitea
+    state: restarted

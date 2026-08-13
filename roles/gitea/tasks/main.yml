@@ -15,6 +15,21 @@
     group: 'root'
     mode: '0755'
 
+- name: Ensure custom template directory exists
+  file:
+    path: "/var/lib/gitea/gitea/templates/custom"
+    state: directory
+    owner: 'root'
+    group: 'root'
+    mode: '0755'
+
+- name: Deploy custom header template for JetBrains Mono font
+  template:
+    src: header.tmpl.j2
+    dest: /var/lib/gitea/gitea/templates/custom/header.tmpl
+    mode: '0644'
+  notify: Restart gitea
+
 - name: Deploy Gitea Quadlet file
   template:
     src: gitea.container.j2
@@ -41,23 +56,28 @@
     dest: /usr/local/bin/gitea-backup.sh
     mode: '0755'
 
-- name: Download and extract Catppuccin Gitea themes
-  unarchive:
-    src: https://github.com/catppuccin/gitea/releases/download/v1.0.2/catppuccin-gitea.tar.gz
-    dest: /var/lib/gitea/gitea/public/assets/css/
-    remote_src: yes
-    owner: 'root'
-    group: 'root'
-    mode: '0755'
-  notify: Reload systemd daemon
+- name: Download and extract Catppuccin latte-green theme
+  shell: |
+    curl -sL https://github.com/catppuccin/gitea/releases/download/v1.0.2/catppuccin-gitea.tar.gz | \
+    tar xz -C /var/lib/gitea/gitea/public/assets/css/ theme-catppuccin-frappe-green.css
+  args:
+    creates: /var/lib/gitea/gitea/public/assets/css/theme-catppuccin-frappe-green.css
 
-- name: Set Catppuccin Frappe as default theme
+- name: Register custom themes
   ini_file:
-    path: /var/lib/gitea/custom/conf/app.ini
+    path: /var/lib/gitea/gitea/conf/app.ini
+    section: ui
+    option: THEMES
+    value: "gitea-auto,gitea-light,gitea-dark,catppuccin-frappe-green"
+  notify: Restart gitea
+
+- name: Set Catppuccin frappe-green as default theme
+  ini_file:
+    path: /var/lib/gitea/gitea/conf/app.ini
     section: ui
     option: DEFAULT_THEME
-    value: "catppuccin-frappe"
-  notify: Reload systemd daemon
+    value: "catppuccin-frappe-green"
+  notify: Restart gitea
 
 - name: Deploy systemd backup service
   template:
