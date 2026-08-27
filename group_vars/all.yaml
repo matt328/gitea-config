@@ -1,5 +1,5 @@
 # Group variables for gitea-config
-# 
+#
 # This file contains default values for all configuration options.
 # To override any values for your environment, create a file named:
 #   group_vars/all.local.yaml
@@ -10,8 +10,8 @@
 # Gitea Configuration (Defaults)
 # ============================================================================
 gitea_image: "docker.io/gitea/gitea:latest"
-gitea_root_url: "https://git.example.com/"
-gitea_ssh_domain: "git.example.com"
+gitea_root_url: "https://git.lab.teeter.dev"
+gitea_ssh_domain: "git.lab.teeter.dev"
 gitea_ssh_port: 22
 gitea_actions_enabled: true
 gitea_publish_ports:
@@ -45,3 +45,13 @@ npm_wants_service: "gitea.service"
 backup_dir: "/mnt/backups"
 backup_limit_gb: 20
 
+# ============================================================================
+# Open-WebUI Configuration (Defaults)
+# ============================================================================
+openwebui_image: "ghcr.io/open-webui/open-webui:main"
+openwebui_publish_ports:
+  - "8080:8080"
+openwebui_volumes:
+  - "open-webui-data:/app/backend/data"
+openwebui_network: "homelab_net"
+openwebui_after_service: ""

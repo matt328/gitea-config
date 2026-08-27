@@ -1,7 +1,8 @@
 ---
-- name: Configure Gitea Mini PC
+- name: Configure Mini PC
   hosts: localhost
-  become: true  # Needed for dnf and systemd system units
+  become: true # Needed for dnf and systemd system units
   roles:
     - base
     - gitea
+    - open-webui

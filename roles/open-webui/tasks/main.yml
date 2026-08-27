@@ -1,0 +1,22 @@
+- name: Ensure Podman is installed
+  ansible.builtin.package:
+    name: podman
+    state: present
+
+- name: Deploy Open-WebUI Quadlet file
+  template:
+    src: open-webui.container.j2
+    dest: /etc/containers/systemd/openwebui.container
+    mode: "0644"
+  notify: Reload systemd daemon
+
+- name: Force systemd daemon reload to process new Quadlet
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Start open-webui service
+  systemd:
+    name: openwebui
+    scope: system
+    enabled: yes
+    state: started

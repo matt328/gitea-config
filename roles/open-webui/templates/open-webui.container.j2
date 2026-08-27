@@ -1,0 +1,24 @@
+[Unit]
+Description=Open-WebUI Container Service
+After=network-online.target
+{% if openwebui_after_service is defined and gitea_after_service|length > 0 %}
+After={{ openwebui_after_service }}
+Wants={{ openwebui_after_service }}
+{% endif %}
+
+[Container]
+Image={{ openwebui_image | default('ghcr.io/open-webui/open-webui:main') }}
+ContainerName=open-webui
+{% for p in openwebui_publish_ports | default(['8080:8080']) %}
+PublishPort={{ p }}
+{% endfor %}
+{% for v in openwebui_volumes | default(['open-webui-data:/app/backend/data']) %}
+Volume={{ v }}
+{% endfor %}
+Network={{ openwebui_network | default('homelab_net') }}
+
+[Service]
+Restart=on-failure
+
+[Install]
+WantedBy=default.target
